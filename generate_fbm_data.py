@@ -22,11 +22,11 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 # FBM 크기
-FBM_H = 38
+FBM_H = 46
 FBM_W = 128
 
-# 불량 패턴 클래스 (normal 제외, 6개)
-DEFECT_CLASSES = ["row_line", "col_line", "corner_rect", "nail", "edge", "block"]
+# 불량 패턴 클래스 (normal 제외, 7개)
+DEFECT_CLASSES = ["row_line", "col_line", "corner_rect", "nail", "edge", "block", "scatter"]
 
 PATTERN_NAMES_KR = {
     "row_line":    "로우 라인",
@@ -35,6 +35,7 @@ PATTERN_NAMES_KR = {
     "nail":        "손톱/반달",
     "edge":        "가장자리",
     "block":       "블록",
+    "scatter":     "랜덤 산포",
 }
 
 
@@ -145,6 +146,29 @@ def generate_block() -> np.ndarray:
     return fbm
 
 
+def generate_scatter() -> np.ndarray:
+    """랜덤 산포 패턴 - 이미지 전체에 무작위로 결함 픽셀이 흩뿌려짐"""
+    fbm = np.zeros((FBM_H, FBM_W), dtype=np.uint8)
+    # 기본 랜덤 산포 (밀도 5~15%)
+    density = random.uniform(0.05, 0.15)
+    scatter_mask = np.random.random((FBM_H, FBM_W)) < density
+    fbm[scatter_mask] = 1
+    # 소규모 클러스터 추가 (현실감)
+    num_clusters = random.randint(5, 15)
+    for _ in range(num_clusters):
+        cy = random.randint(0, FBM_H - 1)
+        cx = random.randint(0, FBM_W - 1)
+        radius = random.randint(1, 3)
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                if dy * dy + dx * dx <= radius * radius:
+                    ny, nx = cy + dy, cx + dx
+                    if 0 <= ny < FBM_H and 0 <= nx < FBM_W:
+                        if random.random() < 0.7:
+                            fbm[ny, nx] = 1
+    return fbm
+
+
 # 패턴 생성 함수 매핑
 PATTERN_GENERATORS = {
     "row_line":    generate_row_line,
@@ -153,6 +177,7 @@ PATTERN_GENERATORS = {
     "nail":        generate_nail,
     "edge":        generate_edge,
     "block":       generate_block,
+    "scatter":     generate_scatter,
 }
 
 

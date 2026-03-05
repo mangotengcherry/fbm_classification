@@ -25,7 +25,7 @@ from fbm_model import FBMClassifier, DEFECT_CLASSES
 
 PATTERN_NAMES_KR = {
     "row_line": "로우라인", "col_line": "컬럼라인", "corner_rect": "모서리사각",
-    "nail": "손톱/반달", "edge": "가장자리", "block": "블록",
+    "nail": "손톱/반달", "edge": "가장자리", "block": "블록", "scatter": "랜덤산포",
 }
 
 

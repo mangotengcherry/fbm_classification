@@ -1,7 +1,7 @@
 """
 FBM 불량 패턴 Multi-Label 분류 CNN 모델
 
-입력: 1 x 38 x 128 (channels x height x width)
+입력: 1 x 46 x 128 (channels x height x width)
 출력: num_classes 개의 logit (sigmoid 적용 전)
       각 출력이 독립적으로 해당 패턴 존재 여부를 나타냄
 """
@@ -10,8 +10,8 @@ import torch
 import torch.nn as nn
 
 
-# 불량 패턴 클래스 (normal 제외)
-DEFECT_CLASSES = ["row_line", "col_line", "corner_rect", "nail", "edge", "block"]
+# 불량 패턴 클래스 (normal 제외, 7개)
+DEFECT_CLASSES = ["row_line", "col_line", "corner_rect", "nail", "edge", "block", "scatter"]
 
 
 class FBMClassifier(nn.Module):
@@ -23,7 +23,7 @@ class FBMClassifier(nn.Module):
       - 추론 시: sigmoid → threshold 로 다중 패턴 감지
     """
 
-    def __init__(self, num_classes: int = 6):
+    def __init__(self, num_classes: int = 7):
         super().__init__()
 
         self.features = nn.Sequential(
