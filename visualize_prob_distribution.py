@@ -67,7 +67,7 @@ def plot_probability_distributions(all_probs, all_labels, eval_name, test_name, 
     - 빨간색: 실제 label=1 (해당 패턴 있음)의 예측 확률 분포
     - threshold=0.5 선
     """
-    fig, axes = plt.subplots(2, 4, figsize=(22, 10))
+    fig, axes = plt.subplots(2, 4, figsize=(28, 14))
     axes = axes.flatten()
 
     colors_neg = "#2196F3"  # 파란색 (negative)
@@ -91,7 +91,7 @@ def plot_probability_distributions(all_probs, all_labels, eval_name, test_name, 
                 label=f"Label=1 (n={len(pos_probs)})", density=True, edgecolor="white", linewidth=0.3)
 
         # threshold 선
-        ax.axvline(x=0.5, color="black", linestyle="--", linewidth=1.5, label="Threshold=0.5")
+        ax.axvline(x=0.5, color="black", linestyle="--", linewidth=2, label="Threshold=0.5")
 
         # 통계
         neg_mean = neg_probs.mean() if len(neg_probs) > 0 else 0
@@ -104,11 +104,12 @@ def plot_probability_distributions(all_probs, all_labels, eval_name, test_name, 
 
         ax.set_title(f"{DEFECT_CLASSES[i]}\n"
                      f"sep={separation:.3f}  FPR={fp_rate:.1%}  FNR={fn_rate:.1%}",
-                     fontsize=10, fontweight="bold")
-        ax.set_xlabel("Predicted Probability")
-        ax.set_ylabel("Density")
-        ax.legend(fontsize=7, loc="upper center")
+                     fontsize=16, fontweight="bold")
+        ax.set_xlabel("Predicted Probability", fontsize=14)
+        ax.set_ylabel("Density", fontsize=14)
+        ax.legend(fontsize=12, loc="upper center")
         ax.set_xlim(-0.02, 1.02)
+        ax.tick_params(labelsize=12)
         ax.grid(alpha=0.2)
 
     # 마지막 셀: 요약 통계
@@ -130,11 +131,11 @@ def plot_probability_distributions(all_probs, all_labels, eval_name, test_name, 
         summary_lines.append(f"{DEFECT_CLASSES[i]:<14s} {sep:>5.3f} {fp_rate:>5.1%} {fn_rate:>5.1%}")
 
     ax.text(0.1, 0.95, "\n".join(summary_lines), transform=ax.transAxes,
-            fontsize=10, verticalalignment="top", fontfamily="monospace",
+            fontsize=16, verticalalignment="top", fontfamily="monospace",
             bbox=dict(boxstyle="round", facecolor="lightyellow", alpha=0.8))
 
     plt.suptitle(f"Probability Distribution per Binary Classifier\n{eval_name} - {test_name}",
-                 fontsize=14, fontweight="bold")
+                 fontsize=26, fontweight="bold")
     plt.tight_layout()
 
     fname = f"prob_dist_{eval_name.lower().replace(' ', '_')}_{test_name.lower().replace(' ', '_')}.png"
@@ -146,7 +147,7 @@ def plot_probability_distributions(all_probs, all_labels, eval_name, test_name, 
 
 def plot_combined_overview(all_results_data, viz_dir):
     """4개 평가 x 2개 테스트셋의 separation 종합 비교"""
-    fig, axes = plt.subplots(2, 1, figsize=(18, 12))
+    fig, axes = plt.subplots(2, 1, figsize=(22, 16))
 
     eval_names = ["Eval1", "Eval2", "Eval3", "Eval4"]
     colors = ["#2196F3", "#4CAF50", "#FF9800", "#E91E63"]
@@ -166,25 +167,26 @@ def plot_combined_overview(all_results_data, viz_dir):
             bars = ax.bar(x + eval_idx * width, seps, width,
                          label=ename, color=colors[eval_idx], alpha=0.8)
 
-            # FNR 표시 (작은 텍스트)
+            # FNR 표시
             for j, (bar, fnr) in enumerate(zip(bars, fnrs)):
                 if fnr > 0.01:  # 1% 이상만 표시
                     ax.text(bar.get_x() + bar.get_width() / 2., bar.get_height() + 0.01,
-                           f"{fnr:.0%}", ha="center", va="bottom", fontsize=6, color="red")
+                           f"{fnr:.0%}", ha="center", va="bottom", fontsize=11, color="red", fontweight="bold")
 
         ax.set_xticks(x + width * 1.5)
-        ax.set_xticklabels(DEFECT_CLASSES, fontsize=10)
+        ax.set_xticklabels(DEFECT_CLASSES, fontsize=16)
         ax.set_ylim(0, 1.15)
-        ax.set_ylabel("Mean Separation (μ₁ - μ₀)")
+        ax.set_ylabel("Mean Separation", fontsize=16)
         ax.set_title(f"{test_type} Test - Probability Separation per Class\n"
-                     f"(빨간 숫자: False Negative Rate)", fontsize=12)
-        ax.legend(fontsize=9)
+                     f"(Red numbers: False Negative Rate)", fontsize=20)
+        ax.legend(fontsize=14)
         ax.grid(axis="y", alpha=0.3)
+        ax.tick_params(axis="y", labelsize=13)
         ax.axhline(y=0.9, color="green", linestyle=":", alpha=0.5, label="Good separation")
 
     plt.suptitle("Binary Classifier Discriminability Overview\n"
-                 "Mean Separation = E[P(x)|label=1] - E[P(x)|label=0]  (높을수록 좋음)",
-                 fontsize=14, fontweight="bold")
+                 "Mean Separation = E[P(x)|label=1] - E[P(x)|label=0]",
+                 fontsize=26, fontweight="bold")
     plt.tight_layout()
     plt.savefig(viz_dir / "prob_dist_overview.png", dpi=150, bbox_inches="tight")
     plt.close()

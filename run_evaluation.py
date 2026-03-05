@@ -485,8 +485,8 @@ def create_visualizations(all_results, output_dir, splits):
     colors = ["#2196F3", "#4CAF50", "#FF9800", "#E91E63"]
 
     # ── 1) 종합 성능 비교 Bar Chart ──
-    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-    fig.suptitle("FBM Defect Classification - Evaluation Results", fontsize=16, fontweight="bold")
+    fig, axes = plt.subplots(2, 2, figsize=(20, 15))
+    fig.suptitle("FBM Defect Classification - Evaluation Results", fontsize=28, fontweight="bold")
 
     # 1a) Subset Accuracy 비교
     ax = axes[0, 0]
@@ -502,24 +502,25 @@ def create_visualizations(all_results, output_dir, splits):
         width = 0.35
         bars1 = ax_idx.bar(x - width / 2, subset_accs, width, label="Subset Accuracy", color=colors, alpha=0.8)
         bars2 = ax_idx.bar(x + width / 2, hamming_accs, width, label="Hamming Accuracy", color=colors, alpha=0.5)
-        ax_idx.set_xlabel("Evaluation")
-        ax_idx.set_ylabel("Accuracy")
+        ax_idx.set_xlabel("Evaluation", fontsize=16)
+        ax_idx.set_ylabel("Accuracy", fontsize=16)
         test_label = "Single Defect" if test_type == "single" else "Composite Defect"
-        ax_idx.set_title(f"{test_label} Test Performance")
+        ax_idx.set_title(f"{test_label} Test Performance", fontsize=18)
         ax_idx.set_xticks(x)
-        ax_idx.set_xticklabels(eval_names, fontsize=9)
-        ax_idx.legend(loc="lower right")
+        ax_idx.set_xticklabels(eval_names, fontsize=14)
+        ax_idx.legend(loc="lower right", fontsize=14)
         ax_idx.set_ylim(0, 1.05)
         ax_idx.grid(axis="y", alpha=0.3)
+        ax_idx.tick_params(axis="y", labelsize=13)
 
         for bar in bars1:
             h = bar.get_height()
             ax_idx.text(bar.get_x() + bar.get_width() / 2., h + 0.01, f"{h:.1%}",
-                       ha="center", va="bottom", fontsize=8)
+                       ha="center", va="bottom", fontsize=14)
         for bar in bars2:
             h = bar.get_height()
             ax_idx.text(bar.get_x() + bar.get_width() / 2., h + 0.01, f"{h:.1%}",
-                       ha="center", va="bottom", fontsize=8)
+                       ha="center", va="bottom", fontsize=14)
 
     # 1b) Training Loss Curves
     ax = axes[1, 0]
@@ -529,11 +530,12 @@ def create_visualizations(all_results, output_dir, splits):
             ax.plot(hist["train_loss"], label=f"Eval{i+1} Train", color=colors[i], linestyle="-")
         if "val_loss" in hist:
             ax.plot(hist["val_loss"], label=f"Eval{i+1} Val", color=colors[i], linestyle="--")
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
-    ax.set_title("Training & Validation Loss")
-    ax.legend(fontsize=7, ncol=2)
+    ax.set_xlabel("Epoch", fontsize=16)
+    ax.set_ylabel("Loss", fontsize=16)
+    ax.set_title("Training & Validation Loss", fontsize=18)
+    ax.legend(fontsize=12, ncol=2)
     ax.grid(alpha=0.3)
+    ax.tick_params(labelsize=13)
 
     # 1c) Validation Subset Accuracy Curves
     ax = axes[1, 1]
@@ -543,12 +545,13 @@ def create_visualizations(all_results, output_dir, splits):
             ax.plot(hist["val_subset_acc"], label=f"Eval{i+1} Subset", color=colors[i], linestyle="-")
         if "val_hamming_acc" in hist:
             ax.plot(hist["val_hamming_acc"], label=f"Eval{i+1} Hamming", color=colors[i], linestyle="--")
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Accuracy")
-    ax.set_title("Validation Accuracy Progress")
-    ax.legend(fontsize=7, ncol=2)
+    ax.set_xlabel("Epoch", fontsize=16)
+    ax.set_ylabel("Accuracy", fontsize=16)
+    ax.set_title("Validation Accuracy Progress", fontsize=18)
+    ax.legend(fontsize=12, ncol=2)
     ax.grid(alpha=0.3)
     ax.set_ylim(0, 1.05)
+    ax.tick_params(labelsize=13)
 
     plt.tight_layout()
     plt.savefig(viz_dir / "01_overall_comparison.png", dpi=150, bbox_inches="tight")
@@ -556,7 +559,7 @@ def create_visualizations(all_results, output_dir, splits):
     print(f"  [시각화] 종합 성능 비교: {viz_dir / '01_overall_comparison.png'}")
 
     # ── 2) Per-Class Performance Heatmap ──
-    fig, axes = plt.subplots(1, 2, figsize=(18, 7))
+    fig, axes = plt.subplots(1, 2, figsize=(22, 9))
 
     for test_idx, test_type in enumerate(["single", "composite"]):
         ax = axes[test_idx]
@@ -570,28 +573,28 @@ def create_visualizations(all_results, output_dir, splits):
         im = ax.imshow(data_matrix, cmap="RdYlGn", vmin=0.5, vmax=1.0, aspect="auto")
 
         ax.set_xticks(range(NUM_CLASSES))
-        ax.set_xticklabels(DEFECT_CLASSES, rotation=45, ha="right", fontsize=9)
+        ax.set_xticklabels(DEFECT_CLASSES, rotation=45, ha="right", fontsize=16)
         ax.set_yticks(range(4))
-        ax.set_yticklabels(["Eval1", "Eval2", "Eval3", "Eval4"])
+        ax.set_yticklabels(["Eval1", "Eval2", "Eval3", "Eval4"], fontsize=16)
 
         for i in range(4):
             for j in range(NUM_CLASSES):
                 val = data_matrix[i, j]
                 color = "white" if val < 0.75 else "black"
-                ax.text(j, i, f"{val:.1%}", ha="center", va="center", fontsize=9, color=color)
+                ax.text(j, i, f"{val:.1%}", ha="center", va="center", fontsize=16, color=color, fontweight="bold")
 
         test_label = "Single Defect" if test_type == "single" else "Composite Defect"
-        ax.set_title(f"Per-Class Accuracy ({test_label})")
+        ax.set_title(f"Per-Class Accuracy ({test_label})", fontsize=18)
         plt.colorbar(im, ax=ax, shrink=0.8)
 
-    plt.suptitle("Per-Class Accuracy Heatmap", fontsize=14, fontweight="bold")
+    plt.suptitle("Per-Class Accuracy Heatmap", fontsize=28, fontweight="bold")
     plt.tight_layout()
     plt.savefig(viz_dir / "02_per_class_heatmap.png", dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  [시각화] 클래스별 성능 히트맵: {viz_dir / '02_per_class_heatmap.png'}")
 
     # ── 3) Per-Class F1 Score Radar Chart ──
-    fig, axes = plt.subplots(1, 2, figsize=(16, 7), subplot_kw=dict(polar=True))
+    fig, axes = plt.subplots(1, 2, figsize=(22, 10), subplot_kw=dict(polar=True))
 
     for test_idx, test_type in enumerate(["single", "composite"]):
         ax = axes[test_idx]
@@ -602,23 +605,24 @@ def create_visualizations(all_results, output_dir, splits):
             r = all_results[ek].get(f"test_{test_type}", {})
             f1_scores = r.get("per_class_f1", [0] * NUM_CLASSES)
             values = f1_scores + f1_scores[:1]
-            ax.plot(angles, values, 'o-', linewidth=1.5, label=f"Eval{i+1}", color=colors[i])
+            ax.plot(angles, values, 'o-', linewidth=2, label=f"Eval{i+1}", color=colors[i])
             ax.fill(angles, values, alpha=0.1, color=colors[i])
 
         ax.set_xticks(angles[:-1])
-        ax.set_xticklabels(DEFECT_CLASSES, fontsize=8)
+        ax.set_xticklabels(DEFECT_CLASSES, fontsize=14)
         ax.set_ylim(0, 1.05)
-        ax.set_title(f"{'Single' if test_type == 'single' else 'Composite'} - Per-Class F1", pad=20)
-        ax.legend(loc="upper right", bbox_to_anchor=(1.3, 1.1), fontsize=8)
+        ax.tick_params(axis="y", labelsize=12)
+        ax.set_title(f"{'Single' if test_type == 'single' else 'Composite'} - Per-Class F1", pad=20, fontsize=18)
+        ax.legend(loc="upper right", bbox_to_anchor=(1.3, 1.1), fontsize=14)
 
-    plt.suptitle("Per-Class F1 Score Radar Chart", fontsize=14, fontweight="bold")
+    plt.suptitle("Per-Class F1 Score Radar Chart", fontsize=28, fontweight="bold")
     plt.tight_layout()
     plt.savefig(viz_dir / "03_f1_radar_chart.png", dpi=150, bbox_inches="tight")
     plt.close()
     print(f"  [시각화] F1 레이더 차트: {viz_dir / '03_f1_radar_chart.png'}")
 
     # ── 4) Precision / Recall 비교 ──
-    fig, axes = plt.subplots(2, 2, figsize=(18, 14))
+    fig, axes = plt.subplots(2, 2, figsize=(22, 16))
 
     for test_idx, test_type in enumerate(["single", "composite"]):
         for metric_idx, metric_name in enumerate(["per_class_precision", "per_class_recall"]):
@@ -632,16 +636,18 @@ def create_visualizations(all_results, output_dir, splits):
                 ax.bar(x + i * width, values, width, label=f"Eval{i+1}", color=colors[i], alpha=0.8)
 
             ax.set_xticks(x + width * 1.5)
-            ax.set_xticklabels(DEFECT_CLASSES, rotation=45, ha="right", fontsize=8)
+            ax.set_xticklabels(DEFECT_CLASSES, rotation=45, ha="right", fontsize=14)
             ax.set_ylim(0, 1.1)
             ax.grid(axis="y", alpha=0.3)
+            ax.tick_params(axis="y", labelsize=13)
 
             metric_label = "Precision" if "precision" in metric_name else "Recall"
             test_label = "Single" if test_type == "single" else "Composite"
-            ax.set_title(f"{test_label} - {metric_label}")
-            ax.legend(fontsize=8)
+            ax.set_title(f"{test_label} - {metric_label}", fontsize=18)
+            ax.set_ylabel(metric_label, fontsize=14)
+            ax.legend(fontsize=14)
 
-    plt.suptitle("Precision & Recall by Class", fontsize=14, fontweight="bold")
+    plt.suptitle("Precision & Recall by Class", fontsize=28, fontweight="bold")
     plt.tight_layout()
     plt.savefig(viz_dir / "04_precision_recall.png", dpi=150, bbox_inches="tight")
     plt.close()
@@ -675,7 +681,7 @@ def _visualize_sample_predictions(all_results, splits, viz_dir):
     indices = random.sample(range(len(dataset)), n_samples)
 
     eval_keys = ["eval1", "eval2", "eval3", "eval4"]
-    fig, axes = plt.subplots(n_samples, 5, figsize=(20, n_samples * 2.5))
+    fig, axes = plt.subplots(n_samples, 5, figsize=(26, n_samples * 3.5))
 
     for row, idx in enumerate(indices):
         tensor, label = dataset[idx]
@@ -684,7 +690,7 @@ def _visualize_sample_predictions(all_results, splits, viz_dir):
         # 이미지 표시
         axes[row, 0].imshow(img, cmap="hot", aspect="auto")
         true_classes = [DEFECT_CLASSES[i] for i in range(NUM_CLASSES) if label[i] == 1]
-        axes[row, 0].set_title(f"True: {'+'.join(true_classes)}", fontsize=7)
+        axes[row, 0].set_title(f"True: {'+'.join(true_classes)}", fontsize=14, fontweight="bold")
         axes[row, 0].axis("off")
 
         # 각 Eval 결과
@@ -702,18 +708,19 @@ def _visualize_sample_predictions(all_results, splits, viz_dir):
                 # 확률 바 차트
                 bar_colors = ["#4CAF50" if pred[i] == label[i] else "#F44336" for i in range(NUM_CLASSES)]
                 ax.barh(range(NUM_CLASSES), prob.numpy(), color=bar_colors, alpha=0.7)
-                ax.axvline(x=0.5, color="red", linestyle="--", linewidth=0.5)
+                ax.axvline(x=0.5, color="red", linestyle="--", linewidth=1)
                 ax.set_yticks(range(NUM_CLASSES))
-                ax.set_yticklabels(DEFECT_CLASSES, fontsize=6)
+                ax.set_yticklabels(DEFECT_CLASSES, fontsize=12)
                 ax.set_xlim(0, 1)
+                ax.tick_params(axis="x", labelsize=11)
                 correct = (pred == label).all().item()
-                ax.set_title(f"Eval{col+1}: {'O' if correct else 'X'}", fontsize=8,
+                ax.set_title(f"Eval{col+1}: {'O' if correct else 'X'}", fontsize=16, fontweight="bold",
                            color="green" if correct else "red")
             else:
-                ax.text(0.5, 0.5, "N/A", ha="center", va="center")
-                ax.set_title(f"Eval{col+1}", fontsize=8)
+                ax.text(0.5, 0.5, "N/A", ha="center", va="center", fontsize=16)
+                ax.set_title(f"Eval{col+1}", fontsize=16)
 
-    plt.suptitle("Sample Predictions on Composite Test Images", fontsize=14, fontweight="bold")
+    plt.suptitle("Sample Predictions on Composite Test Images", fontsize=28, fontweight="bold")
     plt.tight_layout()
     plt.savefig(viz_dir / "05_sample_predictions.png", dpi=150, bbox_inches="tight")
     plt.close()
@@ -804,7 +811,7 @@ def visualize_detection_maps(model, dataset, viz_dir, n_samples=6):
         return
 
     indices = random.sample(range(len(dataset)), n_samples)
-    fig, axes = plt.subplots(n_samples, NUM_CLASSES + 1, figsize=(3 * (NUM_CLASSES + 1), 3 * n_samples))
+    fig, axes = plt.subplots(n_samples, NUM_CLASSES + 1, figsize=(4 * (NUM_CLASSES + 1), 4 * n_samples))
 
     model.eval()
     with torch.no_grad():
@@ -815,7 +822,7 @@ def visualize_detection_maps(model, dataset, viz_dir, n_samples=6):
             # 원본 이미지
             axes[row, 0].imshow(img, cmap="hot", aspect="auto")
             true_cls = [DEFECT_CLASSES[i] for i in range(NUM_CLASSES) if label[i] == 1]
-            axes[row, 0].set_title(f"True: {'+'.join(true_cls)}", fontsize=7)
+            axes[row, 0].set_title(f"True: {'+'.join(true_cls)}", fontsize=14, fontweight="bold")
             axes[row, 0].axis("off")
 
             # Forward pass
@@ -836,10 +843,11 @@ def visualize_detection_maps(model, dataset, viz_dir, n_samples=6):
                     p = probs[c].item()
                     is_true = label[c] == 1
                     ax.set_title(f"{DEFECT_CLASSES[c]}\n{p:.2f} {'(T)' if is_true else ''}",
-                               fontsize=6, color="green" if is_true else "gray")
+                               fontsize=13, fontweight="bold",
+                               color="green" if is_true else "gray")
                     ax.axis("off")
 
-    plt.suptitle("Detection Model - Spatial Attention Maps", fontsize=14, fontweight="bold")
+    plt.suptitle("Detection Model - Spatial Attention Maps", fontsize=28, fontweight="bold")
     plt.tight_layout()
     plt.savefig(viz_dir / "06_detection_attention_maps.png", dpi=150, bbox_inches="tight")
     plt.close()
