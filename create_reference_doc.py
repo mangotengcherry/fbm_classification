@@ -8,6 +8,39 @@ from docx.oxml.ns import qn, nsdecls
 from docx.oxml import parse_xml
 import datetime
 
+# ── 한글 폰트 설정 ──
+# 우선순위: 맑은 고딕(Windows) > Apple SD Gothic Neo(Mac) > Noto Sans KR(Linux/Web)
+FONT_NAME = "맑은 고딕"
+FONT_FALLBACK = "Malgun Gothic"
+
+
+def set_korean_font(run, font_name=FONT_NAME, fallback=FONT_FALLBACK):
+    """Latin + East Asian 폰트를 모두 설정하여 한글 깨짐 방지"""
+    rPr = run._r.get_or_add_rPr()
+    rFonts = rPr.find(qn("w:rFonts"))
+    if rFonts is None:
+        rFonts = parse_xml(f'<w:rFonts {nsdecls("w")}/>')
+        rPr.insert(0, rFonts)
+    rFonts.set(qn("w:ascii"), fallback)
+    rFonts.set(qn("w:hAnsi"), fallback)
+    rFonts.set(qn("w:eastAsia"), font_name)
+    rFonts.set(qn("w:cs"), fallback)
+
+
+def set_style_korean_font(style, font_name=FONT_NAME, fallback=FONT_FALLBACK):
+    """스타일의 rPr에 한글 폰트 설정"""
+    style.font.name = fallback
+    # East Asian 폰트 직접 설정
+    rPr = style.element.get_or_add_rPr()
+    rFonts = rPr.find(qn("w:rFonts"))
+    if rFonts is None:
+        rFonts = parse_xml(f'<w:rFonts {nsdecls("w")}/>')
+        rPr.insert(0, rFonts)
+    rFonts.set(qn("w:ascii"), fallback)
+    rFonts.set(qn("w:hAnsi"), fallback)
+    rFonts.set(qn("w:eastAsia"), font_name)
+    rFonts.set(qn("w:cs"), fallback)
+
 
 def set_cell_shading(cell, color_hex):
     """셀 배경색 설정"""
@@ -30,6 +63,7 @@ def add_styled_table(doc, headers, rows, col_widths=None, header_color="2E4057")
         run.bold = True
         run.font.size = Pt(9)
         run.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        set_korean_font(run)
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         set_cell_shading(cell, header_color)
 
@@ -41,6 +75,7 @@ def add_styled_table(doc, headers, rows, col_widths=None, header_color="2E4057")
             p = cell.paragraphs[0]
             run = p.add_run(str(cell_text))
             run.font.size = Pt(9)
+            set_korean_font(run)
             # 짝수 행 배경색
             if r_idx % 2 == 1:
                 set_cell_shading(cell, "F0F4F8")
@@ -57,9 +92,9 @@ def add_styled_table(doc, headers, rows, col_widths=None, header_color="2E4057")
 def create_document():
     doc = Document()
 
-    # ── 스타일 설정 ──
+    # ── 스타일 설정 (Latin + East Asian 모두) ──
     style = doc.styles["Normal"]
-    style.font.name = "맑은 고딕"
+    set_style_korean_font(style)
     style.font.size = Pt(10)
     style.paragraph_format.space_after = Pt(4)
     style.paragraph_format.line_spacing = 1.15
@@ -67,7 +102,7 @@ def create_document():
     # Heading 스타일
     for level in range(1, 4):
         h_style = doc.styles[f"Heading {level}"]
-        h_style.font.name = "맑은 고딕"
+        set_style_korean_font(h_style)
         h_style.font.color.rgb = RGBColor(0x1A, 0x1A, 0x2E)
 
     # ════════════════════════════════════════════════════════════
@@ -82,6 +117,7 @@ def create_document():
     run.bold = True
     run.font.size = Pt(22)
     run.font.color.rgb = RGBColor(0x1A, 0x1A, 0x2E)
+    set_korean_font(run)
 
     doc.add_paragraph("")
 
@@ -90,6 +126,7 @@ def create_document():
     run = subtitle.add_run("FBM 결함 분류 프로젝트 — Eval 4 모델 분석")
     run.font.size = Pt(14)
     run.font.color.rgb = RGBColor(0x55, 0x55, 0x77)
+    set_korean_font(run)
 
     doc.add_paragraph("")
     doc.add_paragraph("")
@@ -99,6 +136,7 @@ def create_document():
     run = date_p.add_run(f"작성일: {datetime.date.today().strftime('%Y년 %m월 %d일')}")
     run.font.size = Pt(11)
     run.font.color.rgb = RGBColor(0x77, 0x77, 0x77)
+    set_korean_font(run)
 
     doc.add_page_break()
 
@@ -178,6 +216,7 @@ def create_document():
     )
     arch_run.font.size = Pt(9)
     arch_run.italic = True
+    set_korean_font(arch_run)
 
     # ════════════════════════════════════════════════════════════
     #  3. 참고 문헌
@@ -368,6 +407,7 @@ def create_document():
         "WSOL/WSOD의 특성을 부분적으로 공유합니다."
     )
     run.bold = True
+    set_korean_font(run)
 
     # ── 4.2 Detection이라 부를 수 있는 근거 ──
     doc.add_heading("4.2 Detection이라 부를 수 있는 근거", level=2)
@@ -405,6 +445,7 @@ def create_document():
         run_num = p.add_run(f"근거 {i}: {title}")
         run_num.bold = True
         run_num.font.size = Pt(10)
+        set_korean_font(run_num)
         doc.add_paragraph(desc)
 
     # ── 4.3 Detection이라 부르기 어려운 이유 ──
@@ -433,6 +474,7 @@ def create_document():
         run_num = p.add_run(f"한계 {i}: {title}")
         run_num.bold = True
         run_num.font.size = Pt(10)
+        set_korean_font(run_num)
         doc.add_paragraph(desc)
 
     # ── 4.4 권장 용어 ──
@@ -490,7 +532,9 @@ def create_document():
         p = doc.add_paragraph()
         run = p.add_run(f"{i}. ")
         run.bold = True
-        p.add_run(text)
+        set_korean_font(run)
+        run2 = p.add_run(text)
+        set_korean_font(run2)
 
     doc.add_paragraph("")
 
@@ -500,6 +544,7 @@ def create_document():
         "이 경우 더 정확한 공간 localization과 인스턴스 수준의 탐지가 기대됩니다."
     )
     run.italic = True
+    set_korean_font(run)
 
     # ════════════════════════════════════════════════════════════
     #  참고 문헌 목록 (간결 버전)
@@ -543,6 +588,7 @@ def create_document():
         p.paragraph_format.first_line_indent = Cm(-1)
         for run in p.runs:
             run.font.size = Pt(9)
+            set_korean_font(run)
 
     # ── 저장 ──
     output_path = "/home/user/fbm_classification/docs/spatial_attention_references.docx"
